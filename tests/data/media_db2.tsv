@@ -1,0 +1,86 @@
+medium	description	compound	name
+LB	Lysogeny broth	R_EX_adn_e	Adenosine
+LB	Lysogeny broth	R_EX_ala__L_e	L-Alanine
+LB	Lysogeny broth	R_EX_amp_e	AMP
+LB	Lysogeny broth	R_EX_arg__L_e	L-Arginine
+LB	Lysogeny broth	R_EX_aso3_e	Arsenite 
+LB	Lysogeny broth	R_EX_asp__L_e	L-Aspartate
+LB	Lysogeny broth	R_EX_ca2_e	Ca2+
+LB	Lysogeny broth	R_EX_cbl1_e	Vitamin B12
+LB	Lysogeny broth	R_EX_cd2_e	Cadmium 
+LB	Lysogeny broth	R_EX_cl_e	Cl-
+LB	Lysogeny broth	R_EX_cmp_e	CMP
+LB	Lysogeny broth	R_EX_cobalt2_e	Co2+
+LB	Lysogeny broth	R_EX_cro4_e	Chromate 
+LB	Lysogeny broth	R_EX_cu2_e	Cu2+
+LB	Lysogeny broth	R_EX_cys__L_e	L-Cysteine
+LB	Lysogeny broth	R_EX_dad_2_e	Deoxyadenosine 
+LB	Lysogeny broth	R_EX_dcyt_e	Deoxycytidine
+LB	Lysogeny broth	R_EX_fe2_e	Fe2+
+LB	Lysogeny broth	R_EX_fe3_e	Fe3+
+LB	Lysogeny broth	R_EX_fol_e	Folate
+LB	Lysogeny broth	R_EX_glc__D_e	D-Glucose
+LB	Lysogeny broth	R_EX_glu__L_e	L-Glutamate
+LB	Lysogeny broth	R_EX_gly_e	Glycine
+LB	Lysogeny broth	R_EX_gmp_e	GMP
+LB	Lysogeny broth	R_EX_gsn_e	Guanosine
+LB	Lysogeny broth	R_EX_h2o_e	H2O
+LB	Lysogeny broth	R_EX_h2s_e	Hydrogen sulfide
+LB	Lysogeny broth	R_EX_h_e	H+
+LB	Lysogeny broth	R_EX_hg2_e	Hg2+ 
+LB	Lysogeny broth	R_EX_his__L_e	L-Histidine
+LB	Lysogeny broth	R_EX_hxan_e	Hypoxanthine
+LB	Lysogeny broth	R_EX_ile__L_e	L-Isoleucine
+LB	Lysogeny broth	R_EX_ins_e	Inosine
+LB	Lysogeny broth	R_EX_k_e	K+
+LB	Lysogeny broth	R_EX_leu__L_e	L-Leucine
+LB	Lysogeny broth	R_EX_lipoate_e	Lipoate
+LB	Lysogeny broth	R_EX_lys__L_e	L-Lysine
+LB	Lysogeny broth	R_EX_met__L_e	L-Methionine
+LB	Lysogeny broth	R_EX_mg2_e	Mg
+LB	Lysogeny broth	R_EX_mn2_e	Mn2+
+LB	Lysogeny broth	R_EX_mobd_e	Molybdate
+LB	Lysogeny broth	R_EX_na1_e	Na+
+LB	Lysogeny broth	R_EX_nac_e	Isonicotinic acid
+LB	Lysogeny broth	R_EX_nh4_e	Ammonium
+LB	Lysogeny broth	R_EX_ni2_e	Ni2+
+LB	Lysogeny broth	R_EX_o2_e	O2
+LB	Lysogeny broth	R_EX_phe__L_e	L-Phenylalanine
+LB	Lysogeny broth	R_EX_pheme_e	Protoheme
+LB	Lysogeny broth	R_EX_pi_e	Phosphate
+LB	Lysogeny broth	R_EX_pnto__R_e	PAN
+LB	Lysogeny broth	R_EX_pro__L_e	L-Proline
+LB	Lysogeny broth	R_EX_pydx_e	Pyridoxal
+LB	Lysogeny broth	R_EX_ribflv_e	Riboflavin
+LB	Lysogeny broth	R_EX_ser__L_e	L-Serine
+LB	Lysogeny broth	R_EX_so4_e	Sulfate
+LB	Lysogeny broth	R_EX_thm_e	Thiamin
+LB	Lysogeny broth	R_EX_thr__L_e	L-Threonine
+LB	Lysogeny broth	R_EX_thymd_e	Thymidine
+LB	Lysogeny broth	R_EX_trp__L_e	L-Tryptophan
+LB	Lysogeny broth	R_EX_tyr__L_e	L-Tyrosine
+LB	Lysogeny broth	R_EX_ump_e	UMP
+LB	Lysogeny broth	R_EX_ura_e	Uracil
+LB	Lysogeny broth	R_EX_uri_e	Uridine
+LB	Lysogeny broth	R_EX_val__L_e	L-Valine
+LB	Lysogeny broth	R_EX_zn2_e	Zn2+
+M9	M9 minimal medium	R_EX_ca2_e	Ca2+
+M9	M9 minimal medium	R_EX_cl_e	Cl-
+M9	M9 minimal medium	R_EX_cobalt2_e	Co2+
+M9	M9 minimal medium	R_EX_cu2_e	Cu2+
+M9	M9 minimal medium	R_EX_fe2_e	Fe2+
+M9	M9 minimal medium	R_EX_fe3_e	Fe3+
+M9	M9 minimal medium	R_EX_glc__D_e	D-Glucose
+M9	M9 minimal medium	R_EX_h2o_e	H2O
+M9	M9 minimal medium	R_EX_h_e	H+
+M9	M9 minimal medium	R_EX_k_e	K+
+M9	M9 minimal medium	R_EX_mg2_e	Mg
+M9	M9 minimal medium	R_EX_mn2_e	Mn2+
+M9	M9 minimal medium	R_EX_mobd_e	Molybdate
+M9	M9 minimal medium	R_EX_na1_e	Na+
+M9	M9 minimal medium	R_EX_nh4_e	Ammonium
+M9	M9 minimal medium	R_EX_ni2_e	Ni2+
+M9	M9 minimal medium	R_EX_o2_e	O2
+M9	M9 minimal medium	R_EX_pi_e	Phosphate
+M9	M9 minimal medium	R_EX_so4_e	Sulfate
+M9	M9 minimal medium	R_EX_zn2_e	Zn2+

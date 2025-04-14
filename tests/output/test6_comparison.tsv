@@ -1,0 +1,17 @@
+donor	receiver	compound	mass_rate	rate	frequency	community	medium
+environment	ec_nh4_ko	M_glc__D_e	1.2869870794435339	7.143760772330633	1.0	test	M9
+ec_nh4_ko	ec_glc_ko	M_lac__D_e	1.1249115577414686	12.629550731465306	1.0	test	M9
+ec_glc_ko	environment	M_co2_e	0.4622234320099012	10.502810347990803	1.0	test	M9
+ec_glc_ko	environment	M_ac_e	0.4089244910196392	6.925770333931856	1.0	test	M9
+environment	ec_glc_ko	M_o2_e	0.31998800000000005	10.0	1.0	test	M9
+ec_glc_ko	environment	M_h2o_e	0.2287640520193063	12.698390915410666	1.0	test	M9
+ec_nh4_ko	ec_glc_ko	M_akg_e	0.13521430247495725	0.9384531629880273	1.0	test	M9
+environment	ec_glc_ko	M_pi_e	0.10749265662088489	1.1199566637898473	1.0	test	M9
+ec_glc_ko	ec_nh4_ko	M_glu__L_e	0.10395904110438745	0.7114585932507131	1.0	test	M9
+ec_glc_ko	ec_nh4_ko	M_ac_e	0.07608650897291701	1.2886430092340952	1.0	test	M9
+environment	ec_nh4_ko	M_pi_e	0.04606828140895086	0.47998142733850796	1.0	test	M9
+environment	ec_glc_ko	M_nh4_e	0.04277834514211445	2.3715286441690435	1.0	test	M9
+ec_nh4_ko	ec_glc_ko	M_etoh_e	0.01989596931837325	0.4318807619653742	1.0	test	M9
+ec_nh4_ko	environment	M_h2o_e	0.01752061964851214	0.9725464967645181	1.0	test	M9
+ec_nh4_ko	environment	M_h_e	0.014526098676776155	14.412241965250676	1.0	test	M9
+ec_glc_ko	environment	M_h_e	0.0012477923423365692	1.2380120471639737	1.0	test	M9
