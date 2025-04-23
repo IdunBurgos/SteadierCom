@@ -1,6 +1,0 @@
-donor	receiver	compound	mass_rate	rate	frequency	community	medium
-ec_nh4_ko	ec_glc_ko	M_lac__D_e	1.1249115577414655	12.629550731465269	1.0	test	M9
-ec_nh4_ko	ec_glc_ko	M_akg_e	0.13521430247495592	0.9384531629880181	1.0	test	M9
-ec_glc_ko	ec_nh4_ko	M_glu__L_e	0.10395904110438745	0.7114585932507131	1.0	test	M9
-ec_glc_ko	ec_nh4_ko	M_ac_e	0.07608650897291849	1.2886430092341206	1.0	test	M9
-ec_nh4_ko	ec_glc_ko	M_etoh_e	0.01989596931837469	0.43188076196540537	1.0	test	M9
