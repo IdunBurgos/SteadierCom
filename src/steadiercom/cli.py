@@ -137,7 +137,7 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
 
     results = []
     results_abundance = []
-    
+    results_growth = []
     if not has_abundance and growth is None:
         growth = default_growth
     
@@ -197,21 +197,28 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                     df['medium'] = medium
                     results.append(df)
                     
-                    relative_abundance = {0:sol.abundance}
-                    df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
-                    df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
-                    df_abundance.columns = ["sample","member","relative_abundance"]
-                    df_abundance['community']=comm_id
-                    df_abundance['medium'] = medium
-                    results_abundance.append(df_abundance)
-                                                          
+                    if abundance is None:
+                        relative_abundance = {0:sol.abundance}
+                        df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
+                        df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
+                        df_abundance.columns = ["sample","member","relative_abundance"]
+                        df_abundance['community']=comm_id
+                        df_abundance['medium'] = medium
+                        results_abundance.append(df_abundance)
+                    
+                    if growth is None:
+                        growth_rate = sol.growth
+                        growth_ser = pd.Series({"growth":growth_rate,
+                                              "community":comm_id,
+                                              "medium":medium})
+                        
+                        results_growth.append(growth_ser)
+
             else:
                 sols = SteadierSample(community, n=sample, abundance=abundance, growth=growth, allocation=True, constraints=env, w_e=w_e, w_r=w_r, objective=target)
 
                 feasible = [sol.cross_feeding(external_metabolites=external_metabolites, exchange_map=exchange_map,as_df=True).fillna('environment') for sol in sols if sol.status == Status.OPTIMAL]
                 
-                relative_abundance = {i:sol.abundance for i,sol in enumerate(sols) if sol.status == Status.OPTIMAL}
-                    
                 if len(feasible) > 0:
                     df = pd.concat(feasible,ignore_index=True)
                     df['frequency'] = 1
@@ -221,36 +228,56 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                     df['medium'] = medium
                     results.append(df)
                     
-                    df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
-                    df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
-                    df_abundance.columns = ["sample","member","relative_abundance"]
+                    if abundance is None:
+                        relative_abundance = {i:sol.abundance for i,sol in enumerate(sols) if sol.status == Status.OPTIMAL}
+                        df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
+                        df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
+                        df_abundance.columns = ["sample","member","relative_abundance"]
+                        df_abundance['community']=comm_id
+                        df_abundance['medium'] = medium
+
+                        results_abundance.append(df_abundance)
                     
-                    df_abundance['community']=comm_id
-                    df_abundance['medium'] = medium
-                    
-                    results_abundance.append(df_abundance)
+                    if growth is None:
+                        for sol in sols: # Same growth rate for all solutions
+                            if sol.status==Status.OPTIMAL:
+                                growth_rate = sol.growth
+                                break
+                                
+                        growth_ser = pd.Series({"growth":growth_rate,
+                          "community":comm_id,
+                          "medium":medium})
+                        
+                        results_growth.append(growth_ser)
                     
     time3 = time.time()
     print(f"Running SteadierCom and gathering data took: {(time3-time2)/60:.2f} minutes")
     
     if not output:
-        output_file = 'output.tsv'
+        output_file = 'output_cross_feeding.tsv'
         output_file_abundance = 'output_abundance.tsv'
+        output_file_growth = 'output_growth.tsv'
     else:
         output_file = f'{output}.tsv'
         output_file_abundance = f'{output}_abundance.tsv'
+        output_file_growth = f'{output}_growth.tsv'
 
     if len(results) > 0:
         df_all = pd.concat(results,ignore_index=True).query(f'rate > {abstol}').sort_values(['community', 'medium', 'mass_rate'], ascending=False)
         
-        df_all_abundance = pd.concat(results_abundance).sort_values(['community', 'medium','sample'], ascending=[False,False,True])
-
         if unlimited is not None:
             df_all = df_all[~df_all['compound'].isin(unlimited_ids)]
 
         df_all.to_csv(output_file, sep='\t', index=False)
         
-        df_all_abundance.to_csv(output_file_abundance, sep='\t', index=False)
+        if abundance is None:
+            df_all_abundance = pd.concat(results_abundance).sort_values(['community', 'medium','sample','member'], ascending=[False,False,True,False])
+            df_all_abundance.to_csv(output_file_abundance, sep='\t', index=False)
+            
+        if growth is None:
+            df_all_growth = pd.DataFrame(results_growth)
+            df_all_growth.to_csv(output_file_growth, sep='\t', index=False)
+            
         time4 = time.time()
         print(f"Further processing took: {(time4-time3)/60:.2f} minutes")
         
