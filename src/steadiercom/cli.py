@@ -31,16 +31,16 @@ def extract_id_from_filepath(filepath):
 def build_cache(models,exchange_detection=None): # NEW
     ids = [extract_id_from_filepath(model) for model in models]
 
-    return ModelCache(ids, models, load_args={'flavor': 'bigg','exchange_detection':exchange_detection}) # Change here? add extra argument for regex
+    return ModelCache(ids, models, load_args={'flavor': 'bigg','exchange_detection':exchange_detection})
         
 
 
-def load_communities(models, communities,exchange_detection=None): ## change here? add extra argument for regex
+def load_communities(models, communities,exchange_detection=None):
     if len(models) == 1 and '*' in models[0]:
         pattern = models[0]
         models = glob.glob(pattern)
         if len(models) == 0:
-            raise RuntimeError(f'No files found: {pattern}') ## Change here? add extra argument for regex
+            raise RuntimeError(f'No files found: {pattern}') 
         
     model_cache = build_cache(models,exchange_detection)
 
@@ -107,7 +107,7 @@ def precompute_exchange_map(community):
 
 
 def main_run(models, communities=None, output=None, media=None, mediadb=None, growth=None, sample=None, 
-             w_e=0.002, w_r=0.2, target=None, unlimited=None,exchange_detection=None): # Added exchange_detection
+             w_e=0.002, w_r=0.2, target=None, unlimited=None,exchange_detection=None):
 
     abstol = 1e-6
     default_growth = 0.1
@@ -115,7 +115,7 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
     start = time.time()
     
     
-    model_cache, comm_dict, has_abundance = load_communities(models, communities,exchange_detection) ## NEW Add extra argument for regex for exchange reactions
+    model_cache, comm_dict, has_abundance = load_communities(models, communities,exchange_detection)
     
     time1 = time.time()
     print(f"loading communities took: {time1 - start:.4f} seconds")
@@ -136,6 +136,7 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
         unlimited_ids = {f'M_{x}_e' for x in unlimited}
 
     results = []
+    results_abundance = []
     
     if not has_abundance and growth is None:
         growth = default_growth
@@ -195,12 +196,22 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                     df['community'] = comm_id
                     df['medium'] = medium
                     results.append(df)
+                    
+                    relative_abundance = {0:sol.abundance}
+                    df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
+                    df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
+                    df_abundance.columns = ["sample","member","relative_abundance"]
+                    df_abundance['community']=comm_id
+                    df_abundance['medium'] = medium
+                    results_abundance.append(df_abundance)
+                                                          
             else:
                 sols = SteadierSample(community, n=sample, abundance=abundance, growth=growth, allocation=True, constraints=env, w_e=w_e, w_r=w_r, objective=target)
 
                 feasible = [sol.cross_feeding(external_metabolites=external_metabolites, exchange_map=exchange_map,as_df=True).fillna('environment') for sol in sols if sol.status == Status.OPTIMAL]
-
-
+                
+                relative_abundance = {i:sol.abundance for i,sol in enumerate(sols) if sol.status == Status.OPTIMAL}
+                    
                 if len(feasible) > 0:
                     df = pd.concat(feasible,ignore_index=True)
                     df['frequency'] = 1
@@ -209,22 +220,37 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                     df['community'] = comm_id
                     df['medium'] = medium
                     results.append(df)
+                    
+                    df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
+                    df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
+                    df_abundance.columns = ["sample","member","relative_abundance"]
+                    
+                    df_abundance['community']=comm_id
+                    df_abundance['medium'] = medium
+                    
+                    results_abundance.append(df_abundance)
+                    
     time3 = time.time()
     print(f"Running SteadierCom and gathering data took: {(time3-time2)/60:.2f} minutes")
     
     if not output:
         output_file = 'output.tsv'
+        output_file_abundance = 'output_abundance.tsv'
     else:
         output_file = f'{output}.tsv'
+        output_file_abundance = f'{output}_abundance.tsv'
 
     if len(results) > 0:
-        df_all = pd.concat(results,ignore_index=True).query(f'rate > {abstol}').sort_values(['community', 'medium', 'mass_rate'], ascending=False) #added ignore_index=True to concat
+        df_all = pd.concat(results,ignore_index=True).query(f'rate > {abstol}').sort_values(['community', 'medium', 'mass_rate'], ascending=False)
+        
+        df_all_abundance = pd.concat(results_abundance).sort_values(['community', 'medium','sample'], ascending=[False,False,True])
 
         if unlimited is not None:
             df_all = df_all[~df_all['compound'].isin(unlimited_ids)]
 
         df_all.to_csv(output_file, sep='\t', index=False)
         
+        df_all_abundance.to_csv(output_file_abundance, sep='\t', index=False)
         time4 = time.time()
         print(f"Further processing took: {(time4-time3)/60:.2f} minutes")
         

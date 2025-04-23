@@ -18,7 +18,7 @@ def build_problem(community, growth=0.1, abundance=None, constraints=None):
 
     if abundance is None:  # create abundance variables
         for org_id in community.organisms:
-            solver.add_variable(f"x_{org_id}", 0, 1)
+            solver.add_variable(f"x_{org_id}", 0, 1) #lb=0,ub=1
 
     # add all community model reactions
     for r_id, reaction in model.reactions.items():
@@ -188,7 +188,7 @@ def SteadierSample(community, objective=None, n=100, growth=0.1, abundance=None,
     for _ in range(n):
 
         if not abundance:
-            w1 = {org_id: lognormal(0, 1) for org_id in community.organisms}
+            w1 = {org_id: lognormal(0, 1) for org_id in community.organisms} # Change here - abundance
 
         objective = {vi: w1[org_id] * lognormal(0, 1) for org_id, v_org in random_vars.items() for vi in v_org}
 
@@ -243,7 +243,7 @@ def allocation_constraints(community, solver, w_e=0.002, w_r=0.2, abundance=None
         if abundance:
             solver.add_constraint(f"prot_{org_id}", alloc_constr, '<', abundance[org_id])
         else:
-            alloc_constr[f"x_{org_id}"] = -1
+            alloc_constr[f"x_{org_id}"] = -1 # add relative abundance to get sum(w_e*v_e) + w_r*growth - x_i <=0
             solver.add_constraint(f"prot_{org_id}", alloc_constr, '<', 0)
 
     solver.update()

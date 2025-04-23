@@ -151,3 +151,42 @@ class TestSteadiercom(unittest.TestCase):
         with self.subTest("Check that results for sampling match previous results"):
             df_comparison = pd.read_csv("tests/output/test7.tsv",sep="\t")
             assert df_comparison.shape==df.shape
+            
+            
+        
+    def test8(self):
+        """Test sampling for co-growth on media with variabe relative abundance and fixed growth"""
+        df = main_run(
+            models=['tests/data/*.xml'],
+            media='M9',
+            mediadb='tests/data/media_db2.tsv',
+            sample=10,
+            output='tests/output/test8',
+            growth=0.1,
+        )
+        
+        with self.subTest("Produces output"):
+            assert df is not None and len(df) > 0
+        
+        with self.subTest("Frequency column is present"):
+            assert "frequency" in df.columns
+            
+    def test9(self):
+        """Test sampling for co-growth on media with variabe relative abundance and fixed growth"""
+        df = main_run(
+            models=['tests/data/*.xml'],
+            communities='tests/data/communities_no_abundance.tsv',
+            media='M9',
+            mediadb='tests/data/media_db2.tsv',
+            sample=10,
+            output='tests/output/test9',
+            growth=0.1,
+        )
+        
+        with self.subTest("Produces output"):
+            assert df is not None and len(df) > 0
+        
+        with self.subTest("Frequency column is present"):
+            assert "frequency" in df.columns
+            
+       
