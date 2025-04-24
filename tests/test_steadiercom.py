@@ -20,38 +20,34 @@ class TestSteadiercom(unittest.TestCase):
         pass
 
     def test1(self):
-        """Test co-growth on media with compound identifiers"""
-        df = main_run(
+        """Test co-growth on media with compound identifiers/reaction identifiers"""
+        df1 = main_run(
             models=['tests/data/*.xml'],
             media='M9',
             mediadb='tests/data/media_db.tsv',
-            output='tests/output/test1'
+            output='tests/output/test01a'
         )
-
-        assert df is not None and len(df) > 0
         
-        
-    def test2(self):
-        """Test co-growth on media with reaction identifiers"""
-        df = main_run(
+        df2 = main_run(
             models=['tests/data/*.xml'],
             media='M9',
             mediadb='tests/data/media_db2.tsv',
-            output='tests/output/test2'
+            output='tests/output/test01b'
         )
 
-        assert df is not None and len(df) > 0
+        with self.subTest("Produces output"):
+            assert df1 is not None and len(df1) > 0
         
-    def test3(self):
-        """Test that results from compound identifiers and reaction identifiers are equal"""
-        df1 = pd.read_csv("tests/output/test1.tsv",sep="\t")
-        df2 = pd.read_csv("tests/output/test2.tsv",sep="\t")
+        with self.subTest("Produces output"):
+            assert df2 is not None and len(df2) > 0
+            
+        with self.subTest("Check that they are equal"):
+            assert df1.shape==df2.shape
         
-        assert df1.shape==df2.shape
 
     def test4(self):
-        """Test co-growth on media with relative abundance ec_nh4_ko>ec_glc_ko """
-        df = main_run(
+        """Test that sum of mass rate follows protein constraints (Expected: first - ec_nh4_ko>ec_glc_ko, second- ec_nh4_ko<ec_glc_ko)"""
+        df1 = main_run(
             models=['tests/data/*.xml'],
             communities='tests/data/communities1.tsv',
             media='M9',
@@ -59,19 +55,7 @@ class TestSteadiercom(unittest.TestCase):
             output='tests/output/test4'
         )
         
-        with self.subTest("Produces output"):
-            assert df is not None and len(df) > 0
-        
-        with self.subTest("Sum mass flux ec_nh4_ko>ec_glc_ko"):
-            df_sum = df.groupby(["receiver"]).sum()["mass_rate"]
-
-            ec_nh4_ko = df_sum["ec_nh4_ko"]
-            ec_glc_ko = df_sum["ec_glc_ko"]
-            assert ec_nh4_ko>ec_glc_ko
-        
-    def test5(self):
-        """Test co-growth on media with relative abundance ec_nh4_ko<ec_glc_ko """
-        df = main_run(
+        df2 = main_run(
             models=['tests/data/*.xml'],
             communities='tests/data/communities2.tsv',
             media='M9',
@@ -80,10 +64,20 @@ class TestSteadiercom(unittest.TestCase):
         )
         
         with self.subTest("Produces output"):
-            assert df is not None and len(df) > 0
+            assert df1 is not None and len(df1) > 0
             
-        with self.subTest("Sum mass flux ec_nh4_ko<ec_glc_ko"):
-            df_sum = df.groupby(["receiver"]).sum()["mass_rate"]
+        with self.subTest("Produces output"):
+            assert df2 is not None and len(df2) > 0
+        
+        with self.subTest("Sum mass flux ec_nh4_ko>ec_glc_ko for df1"):
+            df_sum = df1.groupby(["receiver"]).sum()["mass_rate"]
+
+            ec_nh4_ko = df_sum["ec_nh4_ko"]
+            ec_glc_ko = df_sum["ec_glc_ko"]
+            assert ec_nh4_ko>ec_glc_ko
+            
+        with self.subTest("Sum mass flux ec_nh4_ko<ec_glc_ko for df2"):
+            df_sum = df2.groupby(["receiver"]).sum()["mass_rate"]
             ec_nh4_ko = df_sum["ec_nh4_ko"]
             ec_glc_ko = df_sum["ec_glc_ko"]
             assert ec_nh4_ko<ec_glc_ko
@@ -190,3 +184,53 @@ class TestSteadiercom(unittest.TestCase):
             assert "frequency" in df.columns
             
        
+    def test10(self):
+        """Test co-growth on media with fixed relative abundance and growth - with some unlimited compounds"""
+        
+        # No prefix for unlimited compounds
+        df1 = main_run(
+            models=['tests/data/*.xml'],
+            communities='tests/data/communities2.tsv',
+            media='M9',
+            mediadb='tests/data/media_db2.tsv',
+            output='tests/output/test10a',
+            growth=0.1,
+            unlimited='tests/data/unlimited.txt',
+        )
+        
+        # M_ prefix for unlimited compounds
+        df2 = main_run(
+            models=['tests/data/*.xml'],
+            communities='tests/data/communities2.tsv',
+            media='M9',
+            mediadb='tests/data/media_db2.tsv',
+            output='tests/output/test10b',
+            growth=0.1,
+            unlimited='tests/data/unlimited_M_prefix.txt',
+        )
+        
+        # R_ prefix for unlimited compounds
+        df3 = main_run(
+            models=['tests/data/*.xml'],
+            communities='tests/data/communities2.tsv',
+            media='M9',
+            mediadb='tests/data/media_db2.tsv',
+            output='tests/output/test10c',
+            growth=0.1,
+            unlimited='tests/data/unlimited_R_prefix.txt',
+        )
+
+        with self.subTest("No prefix for unlimited - Produces output"):
+            assert df1 is not None and len(df1) > 0
+            
+        with self.subTest("M_ prefix for unlimited - Produces output"):
+            assert df2 is not None and len(df2) > 0
+        
+        with self.subTest("R_ prefix for unlimited - Produces output"):
+            assert df3 is not None and len(df3) > 0
+            
+        with self.subTest("The dataframes are equal"):
+            assert df1.shape==df2.shape and df1.shape==df3.shape
+            
+            
+            

@@ -129,11 +129,18 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
             raise RuntimeError('Media database file must be provided.')
         else:   
             media_db, media_has_bounds = load_media_db(mediadb)
-
+    
     if unlimited:
         tmp = pd.read_csv(unlimited, header=None)
-        unlimited = set(tmp[0])
-        unlimited_ids = {f'M_{x}_e' for x in unlimited}
+        unlimited_list = list(tmp[0])
+        test_string = next(iter(unlimited_list))
+            
+        if test_string.startswith("R_EX_") or test_string.startswith("M_"):
+            unlimited_ids = unlimited_list
+            unlimited_met_ids = [rxn.replace("R_EX_","M_") for rxn in unlimited_ids]
+        else:
+            unlimited_ids = [f'M_{x}_e' for x in unlimited_list]
+            unlimited_met_ids = unlimited_ids
 
     results = []
     results_abundance = []
@@ -168,7 +175,7 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                 env = Environment.complete(community.merged_model, inplace=False)
             else:
                 # ADD make media from compounds/reactions - NB assumes that entries have the same prefix
-                string_type = media_db[list(media_db.keys())[0]][0]
+                string_type = list(media_db.values())[0][0]
                 if string_type.startswith("R_"):
                     env = Environment.from_reactions(media_db[medium]).apply(community.merged_model, inplace=False, exclusive=True, warning=False)
                 else:
@@ -187,7 +194,14 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
             print(f'simulating {comm_id} in {medium} medium')
 
             if unlimited is not None:
-                env.update(Environment.from_compounds(unlimited, max_uptake=1000).apply(community.merged_model, inplace=False, exclusive=False, warning=False))
+            
+                test_string =next(iter(unlimited_ids))
+                
+                if test_string.startswith("R_EX_"):
+                    env.update(Environment.from_reactions(unlimited, max_uptake=1000).apply(community.merged_model, inplace=False, exclusive=False, warning=False))
+                    
+                else:
+                    env.update(Environment.from_compounds(unlimited, max_uptake=1000).apply(community.merged_model, inplace=False, exclusive=False, warning=False))
                 
             if sample is None:
                 sol = SteadierCom(community,abundance=abundance, growth=growth, allocation=True, constraints=env, w_e=w_e, w_r=w_r, objective=target)
@@ -198,10 +212,8 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                     results.append(df)
                     
                     if abundance is None:
-                        relative_abundance = {0:sol.abundance}
-                        df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
-                        df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
-                        df_abundance.columns = ["sample","member","relative_abundance"]
+                        relative_abundance = [{'sample':0,'member':k,'relative_abundance':v} for k,v in sol.abundance.items()]
+                        df_abundance = pd.DataFrame(relative_abundance)
                         df_abundance['community']=comm_id
                         df_abundance['medium'] = medium
                         results_abundance.append(df_abundance)
@@ -211,7 +223,6 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                         growth_ser = pd.Series({"growth":growth_rate,
                                               "community":comm_id,
                                               "medium":medium})
-                        
                         results_growth.append(growth_ser)
 
             else:
@@ -229,13 +240,14 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                     results.append(df)
                     
                     if abundance is None:
-                        relative_abundance = {i:sol.abundance for i,sol in enumerate(sols) if sol.status == Status.OPTIMAL}
-                        df_init = pd.DataFrame.from_dict(relative_abundance, orient='index').reset_index()
-                        df_abundance = df_init.melt(id_vars='index', var_name='Key', value_name='Value')
-                        df_abundance.columns = ["sample","member","relative_abundance"]
+                        relative_abundance = [{'sample':i, 'member':k, 'relative_abundance':v} 
+                                              for i,sol in enumerate(sols) if sol.status == Status.OPTIMAL 
+                                              for k, v in sol.abundance.items() 
+                                              if v != 0 ]
+                        
+                        df_abundance = pd.DataFrame(relative_abundance)
                         df_abundance['community']=comm_id
                         df_abundance['medium'] = medium
-
                         results_abundance.append(df_abundance)
                     
                     if growth is None:
@@ -266,12 +278,12 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
         df_all = pd.concat(results,ignore_index=True).query(f'rate > {abstol}').sort_values(['community', 'medium', 'mass_rate'], ascending=False)
         
         if unlimited is not None:
-            df_all = df_all[~df_all['compound'].isin(unlimited_ids)]
+            df_all = df_all[~df_all['compound'].isin(unlimited_met_ids)]
 
         df_all.to_csv(output_file, sep='\t', index=False)
         
         if abundance is None:
-            df_all_abundance = pd.concat(results_abundance).sort_values(['community', 'medium','sample','member'], ascending=[False,False,True,False])
+            df_all_abundance = pd.concat(results_abundance,ignore_index=True).sort_values(['community', 'medium','sample','member'], ascending=[False,False,True,False])
             df_all_abundance.to_csv(output_file_abundance, sep='\t', index=False)
             
         if growth is None:
