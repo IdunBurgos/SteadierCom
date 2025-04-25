@@ -19,6 +19,19 @@ class TestSteadiercom(unittest.TestCase):
         """Tear down test fixtures, if any."""
         pass
 
+    def test0(self):
+        """Test simple input"""
+        df = main_run(
+            models=['tests/data/*.xml'],
+            media='M9',
+            mediadb='tests/data/media_db.tsv',
+            output='tests/output/test00'
+        )
+        
+
+        with self.subTest("Produces output"):
+            assert df is not None and len(df) > 0
+        
     def test1(self):
         """Test co-growth on media with compound identifiers/reaction identifiers"""
         df1 = main_run(
