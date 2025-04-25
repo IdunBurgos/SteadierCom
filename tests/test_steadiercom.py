@@ -45,22 +45,22 @@ class TestSteadiercom(unittest.TestCase):
             assert df1.shape==df2.shape
         
 
-    def test4(self):
+    def test2(self):
         """Test that sum of mass rate follows protein constraints (Expected: first - ec_nh4_ko>ec_glc_ko, second- ec_nh4_ko<ec_glc_ko)"""
         df1 = main_run(
             models=['tests/data/*.xml'],
             communities='tests/data/communities1.tsv',
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
-            output='tests/output/test4'
+            mediadb='tests/data/media_db.tsv',
+            output='tests/output/test02a'
         )
         
         df2 = main_run(
             models=['tests/data/*.xml'],
             communities='tests/data/communities2.tsv',
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
-            output='tests/output/test5'
+            mediadb='tests/data/media_db.tsv',
+            output='tests/output/test02b'
         )
         
         with self.subTest("Produces output"):
@@ -84,15 +84,43 @@ class TestSteadiercom(unittest.TestCase):
 
 
         
-    def test6(self):
-        """Test sampling for co-growth on media with relative abundance ec_nh4_ko<ec_glc_ko """
+    def test3(self):
+        """Test sampling for co-growth on media with fixed relative abundance ec_nh4_ko<ec_glc_ko """
         df = main_run(
             models=['tests/data/*.xml'],
             communities='tests/data/communities2.tsv',
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
+            mediadb='tests/data/media_db.tsv',
             sample=10,
-            output='tests/output/test6'
+            output='tests/output/test03'
+        )
+        
+        with self.subTest("Produces output"):
+            assert df is not None and len(df) > 0
+        
+        with self.subTest("Frequency column is present"):
+            assert "frequency" in df.columns
+            
+        with self.subTest("Sum mass flux ec_nh4_ko>ec_glc_ko"):
+            df_copy = df.copy()
+            df_copy["mass_rate*frequency"] = df_copy.mass_rate*df.frequency
+            df_sum = df_copy.groupby(["receiver"]).sum()["mass_rate*frequency"]
+
+            ec_nh4_ko = df_sum["ec_nh4_ko"]
+            ec_glc_ko = df_sum["ec_glc_ko"]
+            assert ec_nh4_ko<ec_glc_ko
+                    
+        
+    def test4(self):
+        """Test sampling for co-growth on media with fixed relative abundance ec_nh4_ko<ec_glc_ko AND fixed growth rate"""
+        df = main_run(
+            models=['tests/data/*.xml'],
+            communities='tests/data/communities2.tsv',
+            media='M9',
+            mediadb='tests/data/media_db.tsv',
+            sample=10,
+            growth=0.1,
+            output='tests/output/test04'
         )
         
         with self.subTest("Produces output"):
@@ -110,81 +138,50 @@ class TestSteadiercom(unittest.TestCase):
             ec_glc_ko = df_sum["ec_glc_ko"]
             assert ec_nh4_ko<ec_glc_ko
             
-        with self.subTest("Check that results for sampling match previous results"):
-            df_comparison = pd.read_csv("tests/output/test6.tsv",sep="\t")
-            assert df_comparison.shape==df.shape
         
-        
-    def test7(self):
-        """Test sampling for co-growth on media with relative abundance ec_nh4_ko<ec_glc_ko AND fixed growth rate"""
-        df = main_run(
-            models=['tests/data/*.xml'],
-            communities='tests/data/communities2.tsv',
-            media='M9',
-            mediadb='tests/data/media_db2.tsv',
-            sample=10,
-            growth=0.1,
-            output='tests/output/test7'
-        )
-        
-        with self.subTest("Produces output"):
-            assert df is not None and len(df) > 0
-        
-        with self.subTest("Frequency column is present"):
-            assert "frequency" in df.columns
-            
-        with self.subTest("Sum mass flux ec_nh4_ko>ec_glc_ko"):
-            df_copy = df.copy()
-            df_copy["mass_rate*frequency"] = df_copy.mass_rate*df.frequency
-            df_sum = df_copy.groupby(["receiver"]).sum()["mass_rate*frequency"]
-
-            ec_nh4_ko = df_sum["ec_nh4_ko"]
-            ec_glc_ko = df_sum["ec_glc_ko"]
-            assert ec_nh4_ko<ec_glc_ko
-            
-        with self.subTest("Check that results for sampling match previous results"):
-            df_comparison = pd.read_csv("tests/output/test7.tsv",sep="\t")
-            assert df_comparison.shape==df.shape
-            
-            
-        
-    def test8(self):
-        """Test sampling for co-growth on media with variabe relative abundance and fixed growth"""
-        df = main_run(
+    def test5(self):
+        """Test sampling for co-growth on media with variabe relative abundance and fixed growth. First case without specifying members in community, second case with specifying members"""
+        df1 = main_run(
             models=['tests/data/*.xml'],
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
+            mediadb='tests/data/media_db.tsv',
             sample=10,
-            output='tests/output/test8',
+            output='tests/output/test05a',
             growth=0.1,
         )
         
-        with self.subTest("Produces output"):
-            assert df is not None and len(df) > 0
-        
-        with self.subTest("Frequency column is present"):
-            assert "frequency" in df.columns
-            
-    def test9(self):
-        """Test sampling for co-growth on media with variabe relative abundance and fixed growth"""
-        df = main_run(
+        df2 = main_run(
             models=['tests/data/*.xml'],
             communities='tests/data/communities_no_abundance.tsv',
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
+            mediadb='tests/data/media_db.tsv',
             sample=10,
-            output='tests/output/test9',
+            output='tests/output/test05b',
             growth=0.1,
         )
         
+        
         with self.subTest("Produces output"):
-            assert df is not None and len(df) > 0
+            assert df1 is not None and len(df1) > 0
+            
+        with self.subTest("Produces output"):
+            assert df2 is not None and len(df2) > 0
         
         with self.subTest("Frequency column is present"):
-            assert "frequency" in df.columns
+            assert "frequency" in df1.columns
+        
+        with self.subTest("Frequency column is present"):
+            assert "frequency" in df2.columns
+            
+        with self.subTest("Abundance dataframes have the same number of samples"):
+            df1_abundance = pd.read_csv("tests/output/test05a_abundance.tsv")
+            df2_abundance = pd.read_csv("tests/output/test05b_abundance.tsv")
+            
+            assert df1_abundance.shape==df2_abundance.shape 
+            
             
        
-    def test10(self):
+    def test6(self):
         """Test co-growth on media with fixed relative abundance and growth - with some unlimited compounds"""
         
         # No prefix for unlimited compounds
@@ -192,8 +189,8 @@ class TestSteadiercom(unittest.TestCase):
             models=['tests/data/*.xml'],
             communities='tests/data/communities2.tsv',
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
-            output='tests/output/test10a',
+            mediadb='tests/data/media_db.tsv',
+            output='tests/output/test07a',
             growth=0.1,
             unlimited='tests/data/unlimited.txt',
         )
@@ -203,8 +200,8 @@ class TestSteadiercom(unittest.TestCase):
             models=['tests/data/*.xml'],
             communities='tests/data/communities2.tsv',
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
-            output='tests/output/test10b',
+            mediadb='tests/data/media_db.tsv',
+            output='tests/output/test07b',
             growth=0.1,
             unlimited='tests/data/unlimited_M_prefix.txt',
         )
@@ -214,11 +211,12 @@ class TestSteadiercom(unittest.TestCase):
             models=['tests/data/*.xml'],
             communities='tests/data/communities2.tsv',
             media='M9',
-            mediadb='tests/data/media_db2.tsv',
-            output='tests/output/test10c',
+            mediadb='tests/data/media_db.tsv',
+            output='tests/output/test07c',
             growth=0.1,
             unlimited='tests/data/unlimited_R_prefix.txt',
         )
+        
 
         with self.subTest("No prefix for unlimited - Produces output"):
             assert df1 is not None and len(df1) > 0
@@ -230,6 +228,7 @@ class TestSteadiercom(unittest.TestCase):
             assert df3 is not None and len(df3) > 0
             
         with self.subTest("The dataframes are equal"):
+           
             assert df1.shape==df2.shape and df1.shape==df3.shape
             
             

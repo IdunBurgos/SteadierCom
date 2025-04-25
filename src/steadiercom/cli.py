@@ -128,7 +128,7 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
         if mediadb is None:
             raise RuntimeError('Media database file must be provided.')
         else:   
-            media_db, media_has_bounds = load_media_db(mediadb)
+            media_db_dict, media_has_bounds = load_media_db(mediadb)
     
     if unlimited:
         tmp = pd.read_csv(unlimited, header=None)
@@ -175,14 +175,20 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                 env = Environment.complete(community.merged_model, inplace=False)
             else:
                 # ADD make media from compounds/reactions - NB assumes that entries have the same prefix
-                string_type = list(media_db.values())[0][0]
-                if string_type.startswith("R_"):
-                    env = Environment.from_reactions(media_db[medium]).apply(community.merged_model, inplace=False, exclusive=True, warning=False)
+                strings_media = next(iter(media_db_dict.values())) # get the first value in the dict
+                
+                if media_has_bounds:
+                    string_type = next(iter(strings_media.keys())) # get the key in the dict
                 else:
-                    env = Environment.from_compounds(media_db[medium]).apply(community.merged_model, inplace=False, exclusive=True, warning=False)
+                    string_type = next(iter(strings_media)) # get the first value in the list  
+                
+                if string_type.startswith("R_"):
+                    env = Environment.from_reactions(media_db_dict[medium]).apply(community.merged_model, inplace=False, exclusive=True, warning=False)
+                else:
+                    env = Environment.from_compounds(media_db_dict[medium]).apply(community.merged_model, inplace=False, exclusive=True, warning=False)
 
                 if media_has_bounds:
-                    for cpd, bound in media_db[medium].items():
+                    for cpd, bound in media_db_dict[medium].items():
                         # ADD - if cpd already has R_ prefix - don't add anything!
                         if cpd.startswith("R_"):
                             r_id = cpd
