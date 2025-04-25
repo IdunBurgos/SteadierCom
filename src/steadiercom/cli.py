@@ -82,7 +82,6 @@ def load_media_db(filename):
 
 
 def precompute_exchange_map(community):
-    ## NEW FUNCTION
     exchange_map = {}
     community.merge_models()
     reaction_map = community.reaction_map
@@ -174,15 +173,15 @@ def main_run(models, communities=None, output=None, media=None, mediadb=None, gr
                 medium = 'complete'
                 env = Environment.complete(community.merged_model, inplace=False)
             else:
-                # ADD make media from compounds/reactions - NB assumes that entries have the same prefix
-                strings_media = next(iter(media_db_dict.values())) # get the first value in the dict
+                
+                media_components = media_db_dict[medium]
                 
                 if media_has_bounds:
-                    string_type = next(iter(strings_media.keys())) # get the key in the dict
+                    rxn_or_met = next(iter(media_components.keys())) # get the key in the dict
                 else:
-                    string_type = next(iter(strings_media)) # get the first value in the list  
+                    rxn_or_met = next(iter(media_components)) # get the first value in the list  
                 
-                if string_type.startswith("R_"):
+                if rxn_or_met.startswith("R_"):
                     env = Environment.from_reactions(media_db_dict[medium]).apply(community.merged_model, inplace=False, exclusive=True, warning=False)
                 else:
                     env = Environment.from_compounds(media_db_dict[medium]).apply(community.merged_model, inplace=False, exclusive=True, warning=False)
