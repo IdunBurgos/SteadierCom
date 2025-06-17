@@ -5,12 +5,14 @@ from reframed.community.solution import CommunitySolution
 from reframed.solvers.solution import Status
 from numpy.random import lognormal
 from reframed.core.elements import molecular_weight
-
+from reframed.solvers.solver import Parameter
 
 def build_problem(community, growth=0.1, abundance=None, constraints=None):
 
     bigM = 1000
     solver = solver_instance()
+    solver.set_parameter(Parameter.FEASIBILITY_TOL,1e-9) # Changed this to get more accurate solutions
+    
     model = community.merged_model
 
     if growth is None and abundance is None:
@@ -18,7 +20,7 @@ def build_problem(community, growth=0.1, abundance=None, constraints=None):
 
     if abundance is None:  # create abundance variables
         for org_id in community.organisms:
-            solver.add_variable(f"x_{org_id}", 0, 1) #lb=0,ub=1
+            solver.add_variable(f"x_{org_id}", 0, 1) # Relative abundance, between 0 and 1
 
     # add all community model reactions
     for r_id, reaction in model.reactions.items():

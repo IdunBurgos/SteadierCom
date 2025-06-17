@@ -108,7 +108,7 @@ def precompute_exchange_map(community):
 def main_run(models, communities=None, output=None, media=None, mediadb=None, growth=None, sample=None, 
              w_e=0.002, w_r=0.2, target=None, unlimited=None,exchange_detection=None):
 
-    abstol = 1e-6
+    abstol = 1e-9 # Allow for more solutions
     default_growth = 0.1
     
     start = time.time()
